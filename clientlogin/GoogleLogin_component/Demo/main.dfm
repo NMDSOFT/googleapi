@@ -2,7 +2,7 @@ object Form11: TForm11
   Left = 0
   Top = 0
   Caption = 'Google Login'
-  ClientHeight = 167
+  ClientHeight = 163
   ClientWidth = 340
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -124,10 +124,10 @@ object Form11: TForm11
     TabOrder = 5
   end
   object GoogleLogin1: TGoogleLogin
-    AccountType = atHOSTED_OR_GOOGLE
+    AppName = 'Noname-MyCompany-1.0'
+    AccountType = atNone
     Service = tsNone
-    OnAfterLogin = GoogleLogin1AfterLogin
-    Left = 256
-    Top = 4
+    Left = 168
+    Top = 8
   end
 end

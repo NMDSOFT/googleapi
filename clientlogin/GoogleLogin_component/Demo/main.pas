@@ -14,13 +14,13 @@ type
     PassEdit: TEdit;
     Button1: TButton;
     Label4: TLabel;
-    GoogleLogin1: TGoogleLogin;
     Label3: TLabel;
     Label5: TLabel;
     ComboBox1: TComboBox;
     Label6: TLabel;
     AuthEdit: TEdit;
     ResultEdit: TEdit;
+    GoogleLogin1: TGoogleLogin;
     procedure Button1Click(Sender: TObject);
     procedure GoogleLogin1AfterLogin(const LoginResult: TLoginResult;
       LoginStr: string);

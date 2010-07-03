@@ -35,7 +35,7 @@ resourcestring
  rcDisconnect ='—оединение с сервером разорвано';
 
 const
-  DefoultAppName = 'Noname-MyCompany-1.0';
+  DefaultAppName = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.2.6) Gecko/20100625 Firefox/3.6.6';
 
   Flags_Connection = INTERNET_DEFAULT_HTTPS_PORT;
 
@@ -90,6 +90,7 @@ type
     FSource       : string;//им€ вызывающего приложени€
     FLogintoken   : string;
     FLogincaptcha : string;
+    FAppName:string;//название приложени€ дл€ эмул€ции браузера
     //параметры Captcha
     FCaptchaURL   : string;
     FAfterLogin   : TAfterLogin;
@@ -105,6 +106,7 @@ type
     procedure SetService(cService:TServices);
     procedure SetSource(cSource: string);
     procedure SetCaptcha(cCaptcha:string);
+    procedure SetAppName(Value:string);//запись названи€ приложени€( дл€ эмул€ции браузера)
   public
     constructor Create(AOwner: TComponent);override;
     function Login(aLoginToken:string='';aLoginCaptcha:string=''):TLoginResult;overload;
@@ -118,6 +120,7 @@ type
     property LoginToken: string read FLogintoken;
     property LoginCaptcha: string read FLogincaptcha write FLogincaptcha;
   published
+    property AppName:string  read FAppName write SetAppName;//название клиента на случай если гугл прикроет лавочку
     property AccountType: TAccountType read FAccountType write FAccountType;
     property Email: string read FEmail write SetEmail;
     property Password:string read FPassword write SetPassword;
@@ -155,7 +158,8 @@ end;
 
 constructor TGoogleLogin.Create(AOwner: TComponent);
 begin
-inherited Create(AOwner);
+  inherited Create(AOwner);
+  FAppName:=DefaultAppName;
 end;
 
 function TGoogleLogin.ExpertLoginResult(const LoginResult: string): TLoginResult;
@@ -269,7 +273,7 @@ begin
  if Length(Trim(FSource))>0 then
    cBody.WriteString('source='+FSource)
  else
-   cBody.WriteString('source='+DefoultAppName);
+   cBody.WriteString('source='+AppName);
  if Length(Trim(aLoginToken))>0 then
    begin
      cBody.WriteString('&logintoken='+aLoginToken);
@@ -293,7 +297,7 @@ var hInternet,hConnect,hRequest : Pointer;
     dwBytesRead,I,L : Cardinal;
 begin
 try
-hInternet := InternetOpen(PChar('GoogleLogin'),INTERNET_OPEN_TYPE_PRECONFIG,Nil,Nil,0);
+hInternet := InternetOpen(PChar(AppName),INTERNET_OPEN_TYPE_PRECONFIG,Nil,Nil,0);
  if Assigned(hInternet) then
     begin
       //ќткрываем сессию
@@ -309,12 +313,11 @@ hInternet := InternetOpen(PChar('GoogleLogin'),INTERNET_OPEN_TYPE_PRECONFIG,Nil,
               if HttpSendRequest(hRequest,nil,0,nil,0) then
                 begin
                   repeat
-                  DataAvailable(hRequest, L);//ѕолучаем кол-во принимаемых данных
-                  if L = 0 then break;
-                  SetLength(Result,L + I);
-                  if InternetReadFile(hRequest,@Result[I],sizeof(L),dwBytesRead) then//ѕолучаем данные с сервера
-                  else break;
-                  inc(I,dwBytesRead);
+                    DataAvailable(hRequest, L);//ѕолучаем кол-во принимаемых данных
+                    if L = 0 then break;
+                    SetLength(Result,L + I);
+                    if not InternetReadFile(hRequest,@Result[I],sizeof(L),dwBytesRead) then break;//ѕолучаем данные с сервера
+                    inc(I,dwBytesRead);
                   until dwBytesRead = 0;
                   Result[I] := #0;
                 end;
@@ -326,6 +329,15 @@ finally
   InternetCloseHandle(hConnect);
   InternetCloseHandle(hInternet);
 end;
+end;
+
+procedure TGoogleLogin.SetAppName(Value: string);
+begin
+  //проверка на наличие текста
+  if not (Value = '') then
+    FAppName:=Value
+  else
+    FAppName:=DefaultAppName;
 end;
 
 procedure TGoogleLogin.SetCaptcha(cCaptcha: string);
